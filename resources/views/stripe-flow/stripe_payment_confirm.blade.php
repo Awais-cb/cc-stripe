@@ -103,7 +103,7 @@
                     paymentMessage.style.display = 'block';
 
                     // Optionally, you can redirect to another page here
-                    // window.location.href = '/success-page';
+                    window.location.href = '/stripe-payment/confirm';
                 }
             }
         });
