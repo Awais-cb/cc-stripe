@@ -15,11 +15,6 @@
                         <input type="hidden" id="clientSecret" value="{{ $clientSecret }}">
 
                         <div class="form-group">
-                            <label for="name">Name</label>
-                            <input type="text" id="name" name="name" class="form-control" placeholder="Enter your name" required>
-                        </div>
-
-                        <div class="form-group">
                             <label for="amount">Amount</label>
                             <input type="text" id="amount" class="form-control" value="{{ number_format($amount / 100, 2) }}" readonly>
                         </div>
@@ -32,6 +27,11 @@
                         <div class="form-group">
                             <label for="order_id">Order ID</label>
                             <input type="text" id="order_id" class="form-control" value="{{ $order_id }}" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" name="name" class="form-control" placeholder="Enter your name" required>
                         </div>
 
                         <div class="form-group">
@@ -84,7 +84,9 @@
                 }
             }
         }).then(function(result) {
+            document.getElementById('submit').disabled = false;
             var paymentMessage = document.getElementById('payment-message');
+            console.log(result);
             if (result.error) {
                 // Show error message
                 paymentMessage.textContent = result.error.message;
@@ -92,7 +94,7 @@
                 paymentMessage.style.display = 'block';
 
                 // Re-enable the form submit button
-                document.getElementById('submit').disabled = false;
+                // document.getElementById('submit').disabled = false;
             } else {
                 if (result.paymentIntent.status === 'succeeded') {
                     // Show success message

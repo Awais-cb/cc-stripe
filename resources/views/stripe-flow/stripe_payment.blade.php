@@ -21,7 +21,7 @@
                         </div>
                     @endif
 
-                    <form id="payment-form" action="{{ route('stripe.payment') }}" method="POST">
+                    <form id="payment-form" method="POST">
                         @csrf
 
                         <div class="form-group">
@@ -35,6 +35,7 @@
                                 <option value="usd">USD - United States Dollar</option>
                                 <option value="eur">EUR - Euro</option>
                                 <option value="gbp">GBP - British Pound Sterling</option>
+                                <option value="aed">AED - Dirham</option>
                                 <!-- Add more currencies as needed -->
                             </select>
                         </div>
@@ -44,7 +45,9 @@
                             <input type="text" name="order_id" id="order_id" class="form-control" placeholder="Unique Order ID" required>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Initiate Payment</button>
+                        <button type="submit" class="btn btn-primary" id="initiate-payment">Initiate Payment</button>
+
+                        <button type="submit" class="btn btn-secondary" id="hosted-payment">Go to Stripe Hosted Option</button>
                     </form>
 
                 </div>
@@ -52,4 +55,24 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('payment-form');
+        var initiateButton = document.getElementById('initiate-payment');
+        var hostedButton = document.getElementById('hosted-payment');
+
+        initiateButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            form.action = '{{ route('stripe.payment') }}';
+            form.submit();
+        });
+
+        hostedButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            form.action = '{{ route('stripe.hosted.payment') }}';
+            form.submit();
+        });
+    });
+</script>
 @endsection

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
+use Stripe\Checkout\Session;
 
 class PaymentController extends Controller
 {
@@ -61,10 +62,46 @@ class PaymentController extends Controller
         }
     }
 
+
+    /**
+     * @return RedirectResponse
+     * @throws ApiErrorException
+     */
+    public function stripeHosted(Request $request)
+    {
+        Stripe::setApiKey(config('app.stripe_secret_key'));
+
+        $session = Session::create([
+            'line_items'  => [
+                [
+                    'price_data' => [
+                        'currency'     => $request->input('currency'),
+                        'product_data' => [
+                            'name' => 'Therapy Session',
+                        ],
+                        'unit_amount'  => $request->input('amount'),
+                    ],
+                    'quantity'   => 1,
+                ],
+            ],
+            'mode'        => 'payment',
+            'success_url' => route('stripe.payment.confirm'),
+            'cancel_url'  => route('stripe.payment.failed'),
+        ]);
+
+        return redirect()->away($session->url);
+    }
+
     public function confirmPayment(Request $request)
     {
         // Here you can handle post-payment logic, like saving order details or updating records
         return redirect()->route('stripe.payment.form')->with('success', 'Payment successful!');
+    }
+    
+    public function failedPayment(Request $request)
+    {
+        // Here you can handle post-payment logic, like saving order details or updating records
+        return redirect()->route('stripe.payment.form')->with('error', 'Payment Failed!');
     }
 
 }
