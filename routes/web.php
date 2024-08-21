@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PaymentController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -18,7 +19,16 @@ Route::middleware('auth')->group(function () {
 });
 
 
-Route::get('/pay-now', [PaymentController::class, 'paynow'])->name('pay-now');
+Route::get('/stripe-intent', [PaymentController::class, 'stripeIntent'])->name('stripe-intent');
+Route::post('/submit-intent', [PaymentController::class, 'submitIntent'])->name('submit-intent');
 
+
+
+
+
+// actual implementation
+Route::get('/stripe-payment', [PaymentController::class, 'showPaymentForm'])->name('stripe.payment.form');
+Route::post('/stripe-payment', [PaymentController::class, 'initiatePayment'])->name('stripe.payment');
+Route::post('/stripe-payment/confirm', [PaymentController::class, 'confirmPayment'])->name('stripe.payment.confirm');
 
 require __DIR__.'/auth.php';

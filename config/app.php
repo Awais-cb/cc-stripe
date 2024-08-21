@@ -123,4 +123,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /**
+     * The Stripe secret key used for API authentication.
+     *
+     * This value is loaded from the environment variable `STRIPE_SECRET`.
+     */
+    'stripe_secret_key' => env('STRIPE_SECRET'),
+    
+    /**
+     * The Stripe public key used for API authentication.
+     *
+     * This value is loaded from the environment variable `STRIPE_KEY`.
+     */
+    'stripe_public_key' => env('STRIPE_KEY'),
 ];
