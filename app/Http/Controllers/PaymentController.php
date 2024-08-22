@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
 use Stripe\Checkout\Session;
+use Stripe\Webhook;
+use Stripe\Exception\SignatureVerificationException;
+use UnexpectedValueException;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -103,5 +107,49 @@ class PaymentController extends Controller
         // Here you can handle post-payment logic, like saving order details or updating records
         return redirect()->route('stripe.payment.form')->with('error', 'Payment Failed!');
     }
+
+
+    public function handleWebhook(Request $request)
+    {
+        $endpointSecret = config('app.stripe_webhook_secret');
+
+        $payload = $request->getContent();
+        $sigHeader = $request->header('Stripe-Signature');
+
+        try {
+            $event = Webhook::constructEvent(
+                $payload, $sigHeader, $endpointSecret
+            );
+        } catch (SignatureVerificationException $e) {
+            Log::error('Webhook signature verification failed: '.$e->getMessage());
+            return response()->json(['error' => 'Invalid signature'], 400);
+        } catch (UnexpectedValueException $e) {
+            Log::error('Invalid payload: '.$e->getMessage());
+            return response()->json(['error' => 'Invalid payload'], 400);
+        }
+
+        Log::info('Webhook received');
+        Log::debug((array) $event);
+
+        // Handle the event based on its type
+        switch ($event->type) {
+            case 'payment_intent.succeeded':
+                $paymentIntent = $event->data->object; // Contains a StripePaymentIntent
+                // Handle successful payment here
+                Log::info('PaymentIntent was successful!');
+                break;
+            case 'payment_intent.failed':
+                $paymentIntent = $event->data->object; // Contains a StripePaymentIntent
+                // Handle failed payment here
+                Log::info('PaymentIntent failed.');
+                break;
+            // Add more cases to handle other event types
+            default:
+                Log::info('Received unknown event type '.$event->type);
+        }
+
+        return response()->json(['status' => 'success']);
+    }
+
 
 }

@@ -136,4 +136,10 @@ return [
      * This value is loaded from the environment variable `STRIPE_KEY`.
      */
     'stripe_public_key' => env('STRIPE_KEY'),
+    /**
+     * The Stripe public key used for API authentication.
+     *
+     * This value is loaded from the environment variable `STRIPE_KEY`.
+     */
+    'stripe_webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
 ];
