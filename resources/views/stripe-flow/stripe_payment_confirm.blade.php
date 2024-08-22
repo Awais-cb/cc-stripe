@@ -36,7 +36,7 @@
 
                         <div class="form-group">
                             <label for="card-element">Credit or debit card</label>
-                            <div id="card-element" class="form-control">
+                            <div id="card-element" >
                                 <!-- Stripe Element will be inserted here -->
                             </div>
                             <div id="card-errors" role="alert"></div>
@@ -53,12 +53,24 @@
 <!-- Include Stripe.js -->
 <script src="https://js.stripe.com/v3/"></script>
 <script>
-    var stripe = Stripe('{{ config('app.stripe_public_key') }}');
-    var elements = stripe.elements();
-    var card = elements.create('card');
-    card.mount('#card-element');
+    let stripe = Stripe('{{ config('app.stripe_public_key') }}');
+    let clientSecret = document.getElementById('clientSecret').value;
 
-    card.on('change', function(event) {
+    const appearance = {
+        theme: 'flat',
+        variables: { colorPrimaryText: '#262626' }
+    };
+    const options = {
+        layout: {
+            type: 'tabs',
+            defaultCollapsed: false,
+        }
+    };
+    const elements = stripe.elements({ clientSecret, appearance });
+    const paymentElement = elements.create('payment', options);
+    paymentElement.mount('#card-element');
+
+    paymentElement.on('change', function(event) {
         var displayError = document.getElementById('card-errors');
         if (event.error) {
             displayError.textContent = event.error.message;
@@ -76,13 +88,9 @@
 
         var name = document.getElementById('name').value;
 
-        stripe.confirmCardPayment(document.getElementById('clientSecret').value, {
-            payment_method: {
-                card: card,
-                billing_details: {
-                    name: name
-                }
-            }
+        const {error, paymentIntent} = stripe.confirmPayment({
+            elements,
+            redirect: 'if_required'
         }).then(function(result) {
             document.getElementById('submit').disabled = false;
             var paymentMessage = document.getElementById('payment-message');

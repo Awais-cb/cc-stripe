@@ -128,28 +128,23 @@ class PaymentController extends Controller
             return response()->json(['error' => 'Invalid payload'], 400);
         }
 
-        Log::info('Webhook received');
-        Log::debug((array) $event);
-
-        // Handle the event based on its type
+        Log::info("STRIPE WEBHOOK EVENT :: {$event->type} :: DATA :: ",  $event->toArray());
+        
+        /* 
         switch ($event->type) {
             case 'payment_intent.succeeded':
-                $paymentIntent = $event->data->object; // Contains a StripePaymentIntent
-                // Handle successful payment here
+                $paymentIntent = $event->data->object;
                 Log::info('PaymentIntent was successful!');
                 break;
             case 'payment_intent.failed':
-                $paymentIntent = $event->data->object; // Contains a StripePaymentIntent
-                // Handle failed payment here
+                $paymentIntent = $event->data->object;
                 Log::info('PaymentIntent failed.');
                 break;
-            // Add more cases to handle other event types
             default:
                 Log::info('Received unknown event type '.$event->type);
         }
-
+        */
+        
         return response()->json(['status' => 'success']);
     }
-
-
 }
