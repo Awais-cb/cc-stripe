@@ -11,32 +11,13 @@ use Stripe\Exception\SignatureVerificationException;
 use UnexpectedValueException;
 use Illuminate\Support\Facades\Log;
 
+use Stripe\SetupIntent;
+use Stripe\PaymentMethod;
+use Stripe\Customer;
+
+
 class PaymentController extends Controller
 {
-    public function stripeIntent()
-    {
-        return view('stripe-payment-intent');
-    }
-
-    public function submitIntent(Request $request)
-    {
-        // Set your secret key. Remember to switch to your live secret key in production!
-        Stripe::setApiKey(config('app.stripe_secret_key'));
-
-        try {
-            $paymentIntent = PaymentIntent::create([
-                'amount' => $request->input('amount'),
-                'currency' => $request->input('currency'),
-                'metadata' => ['order_id' => $request->input('order_id')],
-            ]);
-
-            // Here you would typically redirect to a success page or back with a success message
-            return redirect()->back()->with('success', 'Payment Intent created successfully!');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error creating payment intent: ' . $e->getMessage());
-        }
-    }
-
 
     public function showPaymentForm()
     {
@@ -146,5 +127,67 @@ class PaymentController extends Controller
         */
         
         return response()->json(['status' => 'success']);
+    }
+
+
+
+    // AUTHORIZE CHARGE LATER
+    public function paymentForm()
+    {
+        Stripe::setApiKey(config('app.stripe_secret_key'));
+
+        // Create a SetupIntent to collect card information
+        $intent = SetupIntent::create();
+
+        return view('stripe_charge_later', [
+            'clientSecret' => $intent->client_secret,
+        ]);
+    }
+
+    public function processPayment(Request $request)
+    {
+        Stripe::setApiKey(config('app.stripe_secret_key'));
+
+        // Create or retrieve the customer
+        $customer = Customer::create([
+            'email' => $request->email,
+            'name' => $request->name,
+        ]);
+
+        // Retrieve the payment method
+        $paymentMethod = PaymentMethod::retrieve($request->payment_method);
+
+        // Attach the payment method to the customer
+        $paymentMethod->attach([
+            'customer' => $customer->id,
+        ]);
+
+        // Optionally, set this as the default payment method for the customer
+        Customer::update($customer->id, [
+            'invoice_settings' => [
+                'default_payment_method' => $paymentMethod->id,
+            ]
+        ]);
+        
+        Log::info("STRIPE CUSTOMER ID :: {$customer->id}");
+        
+        return response()->json(['success' => true, 'message' => 'Card authorized successfully with custom id :: ' . $customer->id]);
+    }
+
+    // In your controller where you process the payment for the product:
+    public function chargeCustomer($customerId, $amount)
+    {
+        Stripe::setApiKey(config('app.stripe_secret_key'));
+
+        $paymentIntent = PaymentIntent::create([
+            'amount' => $amount,
+            'currency' => 'usd',
+            'customer' => $customerId,
+            'payment_method' => 'pm_card_visa', // Use the ID of the saved payment method
+            'off_session' => true,
+            'confirm' => true,
+        ]);
+
+        dd($paymentIntent);
     }
 }

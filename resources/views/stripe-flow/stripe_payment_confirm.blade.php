@@ -85,6 +85,7 @@
 
         // Disable the form submit button to prevent multiple clicks
         document.getElementById('submit').disabled = true;
+        document.getElementById('payment-message').style.display = 'none';
 
         var name = document.getElementById('name').value;
 
