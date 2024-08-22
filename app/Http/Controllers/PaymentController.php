@@ -111,6 +111,7 @@ class PaymentController extends Controller
 
     public function handleWebhook(Request $request)
     {
+        dd('what?');
         $endpointSecret = config('app.stripe_webhook_secret');
 
         $payload = $request->getContent();
