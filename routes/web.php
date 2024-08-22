@@ -37,6 +37,6 @@ Route::get('/stripe-payment/confirm', [PaymentController::class, 'confirmPayment
 Route::get('/stripe-payment/failed', [PaymentController::class, 'failedPayment'])->name('stripe.payment.failed');
 
 
-Route::post('/stripe/webhook', [PaymentController::class, 'handleWebhook'])->name('stripe.webhook');
+Route::post('/webhook/stripe', [PaymentController::class, 'handleWebhook'])->name('stripe.webhook');
 
 require __DIR__.'/auth.php';
