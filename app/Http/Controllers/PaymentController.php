@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Stripe\Stripe;
-use Stripe\PaymentIntent;
-use Stripe\Checkout\Session;
-use Stripe\Webhook;
-use Stripe\Exception\SignatureVerificationException;
 use UnexpectedValueException;
 use Illuminate\Support\Facades\Log;
 
+use Stripe\Stripe;
+use Stripe\Checkout\Session;
+use Stripe\Exception\SignatureVerificationException;
+use Stripe\Webhook;
+use Stripe\PaymentIntent;
 use Stripe\SetupIntent;
 use Stripe\PaymentMethod;
 use Stripe\Customer;
@@ -154,13 +154,19 @@ class PaymentController extends Controller
             'name' => $request->name,
         ]);
 
+        Log::info("processPayment :: STRIPE CUSTOMER ID ::", $customer);
+
         // Retrieve the payment method
         $paymentMethod = PaymentMethod::retrieve($request->payment_method);
-
+        
+        Log::info("processPayment :: STRIPE PAYMENT METHOD ::", $request);
+        
         // Attach the payment method to the customer
         $paymentMethod->attach([
             'customer' => $customer->id,
         ]);
+
+        Log::info('processPayment :: STRIPE PAYMENT METHOD ::', $paymentMethod);
 
         // Optionally, set this as the default payment method for the customer
         Customer::update($customer->id, [
@@ -169,7 +175,7 @@ class PaymentController extends Controller
             ]
         ]);
         
-        Log::info("STRIPE CUSTOMER ID :: {$customer->id}");
+        Log::info("STRIPE CUSTOMER ID ::", $customer->id);
         
         return response()->json(['success' => true, 'message' => 'Card authorized successfully with custom id :: ' . $customer->id]);
     }
