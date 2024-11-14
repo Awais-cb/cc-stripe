@@ -18,6 +18,11 @@ use Stripe\Customer;
 
 class PaymentController extends Controller
 {
+    private $stripeClient;
+
+    function __construct() {
+        $this->stripeClient = new \Stripe\StripeClient(config('app.stripe_secret_key'));
+    }
 
     public function showPaymentForm()
     {
@@ -148,11 +153,36 @@ class PaymentController extends Controller
     {
         Stripe::setApiKey(config('app.stripe_secret_key'));
 
-        // Create or retrieve the customer
-        $customer = Customer::create([
-            'email' => $request->email,
-            'name' => $request->name,
+
+        // $customers = Customer::all(['email' => $request->email]);
+        // $customers = Customer::all([
+        //     'limit' => 1, // Optional: Adjust the limit as needed
+        //     'metadata' => [
+        //         'app_user_id' => $request->email,
+        //     ],
+        // ]);
+
+        $customers = $this->stripeClient->customers->search([
+            // 'query' => 'name:\'Jane Doe\' OR metadata[\'app_user_id\']:\'55\'',
+            'query' => 'name:\'Jane Doe\' OR metadata[\'phone_number\']:\'+923310473883\'',
         ]);
+        
+        if (!empty($customers->data)) {
+            $customer = $customers->data[0];
+            Customer::update($customer->id, ['name' => $request->name]);
+        } else {
+            // $customer = Customer::create(['email' => $request->email, 'name' => $request->name]);
+            // Create or retrieve the customer
+            $customer = Customer::create([
+                // 'email' => $request->email,
+                'name' => $request->name,
+                'metadata' => [
+                    'phone_number' => '+923310473883',
+                    // 'app_user_id' => $request->email,
+                ],
+            ]);
+        }
+        
 
         // Retrieve the payment method
         $paymentMethod = PaymentMethod::retrieve($request->payment_method);

@@ -19,7 +19,7 @@
 
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input id="email" name="email" type="email" required class="form-control">
+                        <input id="email" name="email" type="text" required class="form-control">
                     </div>
 
                     <div id="card-element">
@@ -83,6 +83,8 @@
                         paymentMessage.className = "alert alert-success";
                         paymentMessage.style.display = 'block';
 
+                        console.log('this is the setup intent', result.setupIntent);
+                        
                         // Handle server-side authorization (this is where processPayment is called)
                         fetch('{{ route('payment.process') }}', {
                             method: 'POST',
